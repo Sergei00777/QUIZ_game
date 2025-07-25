@@ -2,12 +2,15 @@
 
 {% block content %}
 <div class="achievements-container">
-    <h2>Мои достижения</h2>
-    <p>Пользователь: {{ username }}</p>
-    <p class="balance">Текущий баланс: {{ money }} руб.</p>
+    <h2><i class="fas fa-trophy"></i> Мои достижения</h2>
 
-    <div class="achievements-section">
-        <h3>Результаты викторин:</h3>
+    <div class="user-info">
+        <p>Пользователь: <strong>{{ username }}</strong></p>
+        <p class="balance">Текущий баланс: <span>{{ money }} руб.</span></p>
+    </div>
+
+    <div class="quiz-results">
+        <h3><i class="fas fa-chart-bar"></i> Результаты викторин:</h3>
         {% if results %}
         <table class="results-table">
             <thead>
@@ -20,7 +23,7 @@
             <tbody>
                 {% for subject, correct, wrong in results %}
                 <tr>
-                    <td>{{ subject|capitalize }}</td>
+                    <td>{{ subject }}</td>
                     <td>{{ correct }}</td>
                     <td>{{ wrong }}</td>
                 </tr>
@@ -28,28 +31,30 @@
             </tbody>
         </table>
         {% else %}
-        <p>Вы еще не проходили викторины.</p>
+        <p class="no-results">Вы еще не проходили викторины.</p>
         {% endif %}
     </div>
 
-    <div class="inventory-section">
-        <h3>Мои покупки:</h3>
+    <div class="inventory">
+        <h3><i class="fas fa-shopping-bag"></i> Мои покупки:</h3>
         {% if inventory %}
-        <div class="inventory-grid">
-            {% for item_name, item_category in inventory %}
-            <div class="inventory-item">
-                <span class="item-category">{{ item_category }}:</span>
-                <span class="item-name">{{ item_name }}</span>
-            </div>
+        <ul class="inventory-list">
+            {% for item, category in inventory %}
+            <li>
+                <span class="item-category">{{ category }}:</span>
+                <span class="item-name">{{ item }}</span>
+            </li>
             {% endfor %}
-        </div>
+        </ul>
         {% else %}
-        <p>У вас пока нет покупок.</p>
+        <p class="no-items">У вас пока нет покупок.</p>
         {% endif %}
     </div>
 
-    <div class="back-link">
-        <a href="{{ url_for('index') }}" class="btn">На главную</a>
+    <div class="actions">
+        <a href="{{ url_for('index') }}" class="btn">
+            <i class="fas fa-home"></i> На главную
+        </a>
     </div>
 </div>
 {% endblock %}

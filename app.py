@@ -276,21 +276,54 @@ def achievements():
     if 'username' not in session:
         return redirect(url_for('login'))
 
-    conn = sqlite3.connect('quiz_game.db')
-    c = conn.cursor()
+    try:
+        conn = sqlite3.connect('quiz_game.db')
+        c = conn.cursor()
 
-    c.execute("SELECT id, money FROM users WHERE username=?", (session['username'],))
-    user = c.fetchone()
+        # Получаем данные пользователя
+        c.execute("SELECT id, money FROM users WHERE username=?", (session['username'],))
+        user = c.fetchone()
+        if not user:
+            return redirect(url_for('login'))
 
-    c.execute("SELECT item_name, item_category FROM inventory WHERE user_id=?", (user[0],))
-    inventory = c.fetchall()
+        user_id, money = user
 
-    c.execute("SELECT subject, correct, wrong FROM quiz_results WHERE user_id=?", (user[0],))
-    results = c.fetchall()
+        # Получаем статистику по викторинам (группируем по предмету)
+        c.execute("""
+            SELECT subject, 
+                   SUM(correct) as correct_answers,
+                   SUM(wrong) as wrong_answers
+            FROM quiz_results
+            WHERE user_id = ?
+            GROUP BY subject
+        """, (user_id,))
+        results = c.fetchall()
 
-    conn.close()
+        # Получаем инвентарь (последние покупки)
+        c.execute("""
+            SELECT item_name, item_category
+            FROM inventory
+            WHERE user_id = ?
+            ORDER BY purchase_date DESC
+            LIMIT 10
+        """, (user_id,))
+        inventory = c.fetchall()
 
-    return render_template('achievements.html', money=user[1], inventory=inventory, results=results)
+        return render_template('achievements.html',
+                               username=session['username'],
+                               money=money,
+                               results=results,
+                               inventory=inventory)
+
+    except Exception as e:
+        print(f"Ошибка при получении достижений: {e}")
+        return render_template('achievements.html',
+                               username=session.get('username'),
+                               money=0,
+                               results=[],
+                               inventory=[])
+    finally:
+        conn.close()
 
 
 @app.route('/purchase', methods=['POST'])

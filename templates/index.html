@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Ваш баланс: {{ money }} руб.</h2>
+<div class="subjects">
+
+    <a href="{{ url_for('quiz', subject='russian') }}" class="subject-btn">Русский язык</a>
+    <a href="{{ url_for('quiz', subject='math') }}" class="subject-btn">Математика</a>
+    <a href="{{ url_for('quiz', subject='biology') }}" class="subject-btn">Биология</a>
+    <a href="{{ url_for('quiz', subject='history') }}" class="subject-btn">История</a>
+    <a href="{{ url_for('quiz', subject='literature') }}" class="subject-btn">Литература</a>
+    <a href="{{ url_for('quiz', subject='english') }}" class="subject-btn">Английский язык</a>
+</div>
+{% endblock %}
+
+
+
+

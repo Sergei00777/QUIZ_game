@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="achievements-container">
+    <h2>Мои достижения</h2>
+    <p>Пользователь: {{ username }}</p>
+    <p class="balance">Текущий баланс: {{ money }} руб.</p>
+
+    <div class="achievements-section">
+        <h3>Результаты викторин:</h3>
+        {% if results %}
+        <table class="results-table">
+            <thead>
+                <tr>
+                    <th>Предмет</th>
+                    <th>Правильные ответы</th>
+                    <th>Неправильные ответы</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for subject, correct, wrong in results %}
+                <tr>
+                    <td>{{ subject|capitalize }}</td>
+                    <td>{{ correct }}</td>
+                    <td>{{ wrong }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p>Вы еще не проходили викторины.</p>
+        {% endif %}
+    </div>
+
+    <div class="inventory-section">
+        <h3>Мои покупки:</h3>
+        {% if inventory %}
+        <div class="inventory-grid">
+            {% for item_name, item_category in inventory %}
+            <div class="inventory-item">
+                <span class="item-category">{{ item_category }}:</span>
+                <span class="item-name">{{ item_name }}</span>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p>У вас пока нет покупок.</p>
+        {% endif %}
+    </div>
+
+    <div class="back-link">
+        <a href="{{ url_for('index') }}" class="btn">На главную</a>
+    </div>
+</div>
+{% endblock %}

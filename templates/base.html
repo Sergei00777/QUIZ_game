@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Обучающая игра</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<header>
+    <h1>Обучающая игра</h1>
+    {% if 'username' in session %}
+    <div class="user-info">
+        Игрок: {{ username }} | Баланс: {{ money }} руб.
+    </div>
+    {% endif %}
+</header>
+
+    <nav>
+        <a href="{{ url_for('index') }}">Главная</a> |
+        <a href="{{ url_for('shop') }}">Магазин</a> |
+        <a href="{{ url_for('achievements') }}">Достижения</a>
+    </nav>
+
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer>
+        <p>© 2025 Обучающая игра для детей</p>
+    </footer>
+</body>
+</html>
+<head>
+    <!-- ... другие мета-теги ... -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>

@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Результат</h2>
+<p>{{ message }}</p>
+<p>Текущий баланс: {{ money }} руб.</p>
+<div class="actions">
+    <a href="{{ url_for('quiz', subject=subject) }}" class="btn">Следующий вопрос</a>
+    <a href="{{ url_for('index') }}" class="btn">На главную</a>
+</div>
+{% endblock %}

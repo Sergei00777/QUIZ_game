@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>{{ subject|capitalize }} - Вопрос</h2>
+<p>Текущий баланс: {{ money }} руб.</p>
+<p>{{ question.question }}</p>
+
+<form method="POST">
+    <input type="hidden" name="question_id" value="{{ question_id }}">
+    {% for answer in question.answers %}
+    <div class="answer-option">
+        <input type="radio" id="answer{{ loop.index0 }}" name="answer" value="{{ loop.index0 }}">
+        <label for="answer{{ loop.index0 }}">{{ answer }}</label>
+    </div>
+    {% endfor %}
+    <button type="submit" class="submit-btn">Ответить</button>
+</form>
+
+<div class="nav-links">
+    <a href="{{ url_for('index') }}" class="btn">На главную</a>
+</div>
+{% endblock %}

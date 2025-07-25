@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="shop-container">
+    <h2>Магазин</h2>
+    <div class="balance-info">
+        Ваш баланс: <strong>{{ money }} руб.</strong>
+    </div>
+
+    {% for category, items in categories.items() %}
+    <div class="category-section">
+        <h3>{{ category|capitalize }}</h3>
+        <div class="items-grid">
+            {% for item in items %}
+            <div class="item-card">
+                <div class="item-content">
+                    <h4>{{ item.name }}</h4>
+                    <div class="item-price">{{ item.price }} руб.</div>
+                    <button class="buy-btn {% if money < item.price %}disabled{% endif %}"
+                            data-item="{{ item.name }}"
+                            data-category="{{ category }}"
+                            data-price="{{ item.price }}">
+                        {% if money >= item.price %}Купить{% else %}Недостаточно{% endif %}
+                    </button>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<script>
+document.querySelectorAll('.buy-btn:not(.disabled)').forEach(btn => {
+    btn.addEventListener('click', function() {
+        const item = this.dataset.item;
+        const category = this.dataset.category;
+        const price = parseInt(this.dataset.price);
+
+        fetch("/purchase", {
+            method: "POST",
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                item: item,
+                category: category,
+                price: price
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            alert(data.message);
+            if (data.success) {
+                window.location.reload();
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

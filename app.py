@@ -77,7 +77,6 @@ def login():
     return render_template('login.html')
 
 
-# ОДИН единственный обработчик для викторины
 @app.route('/quiz/<subject>', methods=['GET', 'POST'])
 def quiz(subject):
     if 'username' not in session:
@@ -87,45 +86,70 @@ def quiz(subject):
     c = conn.cursor()
     c.execute("SELECT id, money FROM users WHERE username=?", (session['username'],))
     user = c.fetchone()
-    user_id, current_money = user[0], user[1]
+
+    if not user:
+        conn.close()
+        return redirect(url_for('login'))
+
+    user_id, current_money = user
 
     if request.method == 'POST':
-        question_id = int(request.form['question_id'])
-        selected_answer = int(request.form['answer'])
-        question = questions_data[subject][question_id]
+        try:
+            question_id = int(request.form['question_id'])
+            selected_answer = int(request.form['answer'])
+            question = questions_data[subject][question_id]
 
-        if selected_answer == question['correct']:
-            new_money = current_money + 1
-            c.execute("UPDATE users SET money = ? WHERE id=?", (new_money, user_id))
-            message = f"Правильно! +1 рубль. Ваш баланс: {new_money} руб."
-        else:
-            c.execute("SELECT wrong FROM quiz_results WHERE user_id=? ORDER BY date DESC LIMIT 1", (user_id,))
-            last_result = c.fetchone()
+            correct = 0
+            wrong = 0
 
-            wrong_in_row = 1
-            if last_result and last_result[0] >= 2:
-                new_money = max(0, current_money - 5)
-                c.execute("UPDATE users SET money = ? WHERE id=?", (new_money, user_id))
-                message = f"Неправильно! Штраф -5 руб. за 3 ошибки подряд. Баланс: {new_money} руб."
+            if selected_answer == question['correct']:
+                new_money = current_money + 1
+                correct = 1
+                message = f"Правильно! +1 рубль. Ваш баланс: {new_money} руб."
             else:
-                new_money = current_money
-                message = "Неправильно! Попробуйте еще раз"
+                c.execute("SELECT wrong FROM quiz_results WHERE user_id=? AND subject=? ORDER BY date DESC LIMIT 1",
+                          (user_id, subject))
+                last_result = c.fetchone()
+                wrong_in_row = last_result[0] + 1 if last_result else 1
+                wrong = 1
 
+                if wrong_in_row >= 3:
+                    new_money = max(0, current_money - 5)
+                    message = f"Неправильно! Штраф -5 руб. за 3 ошибки подряд. Баланс: {new_money} руб."
+                else:
+                    new_money = current_money
+                    message = "Неправильно! Попробуйте еще раз"
+
+                c.execute("UPDATE users SET money = ? WHERE id=?", (new_money, user_id))
+
+            # Сохраняем результат
             c.execute("INSERT INTO quiz_results (user_id, subject, correct, wrong, date) VALUES (?, ?, ?, ?, ?)",
-                      (user_id, subject, 0, wrong_in_row, datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
+                      (user_id, subject, correct, wrong, datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
+            conn.commit()
 
-        conn.commit()
+            return render_template('quiz_result.html',
+                                   message=message,
+                                   money=new_money,
+                                   subject=subject)
+        except Exception as e:
+            print(f"Ошибка в викторине: {e}")
+            return redirect(url_for('index'))
+        finally:
+            conn.close()
+
+    # GET запрос - показать новый вопрос
+    try:
+        question = random.choice(questions_data[subject])
+        question_id = questions_data[subject].index(question)
+        return render_template('quiz.html',
+                               subject=subject,
+                               question=question,
+                               question_id=question_id,
+                               money=current_money)
+    except KeyError:
+        return redirect(url_for('index'))
+    finally:
         conn.close()
-        return render_template('quiz_result.html', message=message, money=new_money, subject=subject)
-
-    question = random.choice(questions_data[subject])
-    question_id = questions_data[subject].index(question)
-    conn.close()
-    return render_template('quiz.html',
-                           subject=subject,
-                           question=question,
-                           question_id=question_id,
-                           money=current_money)
 
 
 @app.route('/shop')
